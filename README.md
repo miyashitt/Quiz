@@ -7,17 +7,20 @@
     body { font-family: 'Arial', sans-serif; background: #f5f5f5; text-align: center; padding: 20px; }
     .question-box { font-size: 1.5em; margin: 20px; min-height: 100px; }
     .choices { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 20px; }
-    .choice { padding: 10px 20px; background: #eee; border-radius: 10px; cursor: pointer; font-size: 1.2em; }
+    .choice { padding: 10px 20px; background: #eee; border-radius: 10px; cursor: pointer; font-size: 1.2em; transition: background 0.3s ease; }
     .choice:hover { background: #ccc; }
     #startBtn, #nextBtn { padding: 10px 20px; font-size: 1.2em; cursor: pointer; }
     #scoreBox { font-size: 1.5em; margin-top: 30px; }
     #timer { font-size: 1.2em; margin-top: 10px; }
     #answerBox { font-size: 1.5em; margin: 10px; color: #333; }
-    #feedbackBox { font-size: 1.1em; margin: 10px auto; max-width: 80%; color: #444; line-height: 1.5; }
+    #feedbackBox { font-size: 1.2em; margin: 10px auto; max-width: 80%; color: #444; line-height: 1.6; opacity: 0; transition: opacity 0.8s ease; }
   </style>
 </head>
 <body>
   <h1>縣陵百科クイズ</h1>
+  <audio id="bgm" loop autoplay volume="0.3">
+    <source src="https://cdn.pixabay.com/download/audio/2023/03/14/audio_ef16bc184b.mp3?filename=fun-pop-music-14550.mp3" type="audio/mp3">
+  </audio>
   <div id="quiz">
     <div class="question-box" id="question"></div>
     <div id="timer">制限時間: <span id="time">15</span>秒</div>
@@ -62,12 +65,13 @@
       scoreBox.innerHTML = '';
       current = 0;
       score = 0;
+      document.getElementById('bgm').play();
       showQuestion();
     }
 
     nextBtn.onclick = () => {
       nextBtn.style.display = 'none';
-      feedbackBox.innerText = '';
+      feedbackBox.style.opacity = 0;
       current++;
       if (current < quizData.length) {
         showQuestion();
@@ -81,6 +85,7 @@
       qEl.innerHTML = '';
       answerBox.innerText = '';
       feedbackBox.innerText = '';
+      feedbackBox.style.opacity = 0;
       answerProgress = '';
       currentAnswer = q.a;
       let i = 0;
@@ -94,7 +99,7 @@
           startTimer();
           showNextChar();
         }
-      }, 50);
+      }, 100); // ← 表示速度を遅くした（以前は50）
     }
 
     function showNextChar() {
@@ -106,6 +111,7 @@
         let scoreAdd = Math.max(0, Math.round((15 - elapsed) * 10));
         score += scoreAdd;
         feedbackBox.innerText = `正解！\n【答え】${q.a}\n${q.comment || ''}`;
+        feedbackBox.style.opacity = 1;
         nextBtn.style.display = 'inline';
         return;
       }
@@ -131,6 +137,7 @@
             stopTimer();
             answerBox.innerText += ` ✕（間違い）`;
             feedbackBox.innerText = `不正解…\n【正解】${q.a}\n${q.comment || ''}`;
+            feedbackBox.style.opacity = 1;
             nextBtn.style.display = 'inline';
           }
         };
@@ -147,7 +154,9 @@
         if (time <= 0) {
           clearInterval(timer);
           answerBox.innerText += ` ⏰（時間切れ）`;
-          feedbackBox.innerText = `時間切れ…\n【正解】${quizData[current].a}\n${quizData[current].comment || ''}`;
+          const q = quizData[current];
+          feedbackBox.innerText = `時間切れ…\n【正解】${q.a}\n${q.comment || ''}`;
+          feedbackBox.style.opacity = 1;
           nextBtn.style.display = 'inline';
         }
       }, 1000);
@@ -163,7 +172,14 @@
       timeEl.innerText = '0';
       answerBox.innerHTML = '';
       feedbackBox.innerText = '';
-      scoreBox.innerHTML = `あなたのスコア：${score} / 1350`;
+
+      let rank = '';
+      if (score >= 1200) rank = '神ランク ✨';
+      else if (score >= 900) rank = 'マスターランク 💪';
+      else if (score >= 600) rank = 'ノーマルランク 👍';
+      else rank = 'ビギナー 🔰';
+
+      scoreBox.innerHTML = `あなたのスコア：${score} / 1350<br>ランク：${rank}`;
       startBtn.style.display = 'inline';
     }
   </script>
