@@ -36,7 +36,7 @@
       {q:"伝説の文化祭OPは？○○○○サマー", a:"アーリー", comment:"幾度となく塗り替えようとされてきたがいまだにこれを超えるクオリティーの曲は発表されていない。音源は生徒会が管理しており、一般生徒が触れることはできない"},
       {q:"専門は家族社会学、ジェンダー論、女性学である、日本のフェミニスト・社会学者は？", a:"うえのちづこ", comment:""},
       {q:"高校生向け化学の動画を投稿し大学入試センターと戦うチャンネルは？\nOnline Chemistry by ○○○○○", a:"ヒガシマキ", comment:"https://youtu.be/ZvE1JMkcj3A?feature=shared"},
-      {q:"縣陵生になると体育の時間に覚えさせられるものは?", a:"けんりょうたいそう", comment:"「準備体操とは元々軍隊などで訓練のために行われていたものである。」という真偽不明の由来故になかなかハードで準備体操にしては長めな運動を体育の前にやらされる。先生によっては少し喋っただけで最初からやり直しとなる可能性もあり、注意が必要である。なお2年生以降ではその存在は突然無くなり覚えている人間は、強力な洗脳に耐えた1部の者だけであり秘密裏にその存在は語り継がれている。「やる意味が無い」というような発言をした者は1人残らず消されている。「やる意味が無い」というような発言をした者は1人残らず消されている。"},
+      {q:"縣陵生になると体育の時間に覚えさせられるものは?", a:"けんりょうたいそう", comment:"「準備体操とは元々軍隊などで訓練のために行われていたものである。」という真偽不明の由来故になかなかハードで準備体操にしては長めな運動を体育の前にやらされる。先生によっては少し喋っただけで最初からやり直しとなる可能性もあり、注意が必要である。なお2年生以降ではその存在は突然無くなり覚えている人間は、強力な洗脳に耐えた1部の者だけであり秘密裏にその存在は語り継がれている。「やる意味が無い」というような発言をした者は1人残らず消されている。"},
       {q:"質実剛健であれ　大道を闊歩せよ　あとひとつは？", a:"よわねをはくな", comment:"3つから成る我が校に古くから伝わる三大精神である。ほとんどの縣陵生は弱音を吐くなしか知らない。お昼の放送の曲で軽くあしらわれているが、実は在学3年間にこの精神の下、高校生活を遂行したものは殿堂入りを果たすことができる。しかし未だ達成したものはいない。"},
       {q:"地球の会←なんて読む？", a:"そらのかい", comment:"難読漢字の一種。ただの初見殺し。部活は月1"},
       {q:"縣陵応援団の言うPTAのAとは?", a:"アルコール", comment:"パチンコ、タバコ、アルコールの略であり縣陵生の誰もが知っている。応援団の「いいかお前らPTAには手を出すなよ」というフレーズは去年流行語大賞に選ばれた。"},
@@ -63,7 +63,7 @@
     const KATAKANA = [..."アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンー"];
     const ALPHABET = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"];
     const NUMBERS = [..."0123456789"];
-    const SYMBOLS = [..."！？、。ー・"]; // 必要に応じて拡張
+    const SYMBOLS = [..."！？、。ー・"]; 
 
     let quizData = [], current = 0, score = 0, bestScore = 0,
         currentAnswer = "", answerProgress = "",
@@ -90,16 +90,30 @@
       startBtn.style.display = 'none';
       score = 0;
       current = 0;
-      quizData = [...fullData].sort(() => Math.random() - 0.5).slice(0, 5);
+      quizData = [...fullData].sort(() => Math.random() - 0.5).slice(0, 5); // 5問に限定
       nextBtn.style.display = 'none';
+      nextBtn.innerText = '次の問題'; // ボタンのテキストをリセット
+      nextBtn.onclick = handleNextQuestion; // クリックイベントをリセット
       showQuestion();
     };
+
+    // nextBtnのデフォルトのクリックハンドラ
+    function handleNextQuestion() {
+      current++;
+      if (current < quizData.length) {
+        showQuestion();
+      } else {
+        // 最終問題の場合はボタンを「結果を見る」に切り替える
+        nextBtn.innerText = '結果を見る';
+        nextBtn.onclick = showScore; // クリックイベントをshowScoreに設定
+      }
+    }
 
     function showQuestion() {
       clearTimers();
 
       qEl.innerText = '';
-      choicesEl.innerHTML = ''; // 確実に選択肢をクリア
+      choicesEl.innerHTML = '';
       feedbackBox.innerText = '';
       feedbackBox.style.opacity = 0;
       answerBox.innerText = '';
@@ -139,12 +153,17 @@
         if (time <= 0) {
           stopTimer();
           wrongSound.play();
-          choicesEl.innerHTML = ''; // 時間切れ時にも選択肢をクリア
+          choicesEl.innerHTML = '';
           answerBox.innerText = answerProgress + '...';
           feedbackBox.innerText = `時間切れ…\n【正解】${quizData[current].a}\n${quizData[current].comment || ''}`;
           feedbackBox.style.opacity = 1;
           nextBtn.style.display = 'inline';
           score -= 20;
+          // 最終問題の場合はボタンを「結果を見る」に切り替える
+          if (current === quizData.length - 1) {
+            nextBtn.innerText = '結果を見る';
+            nextBtn.onclick = showScore;
+          }
         }
       }, 1000);
     }
@@ -169,21 +188,26 @@
         score += 50 + bonus;
 
         correctSound.play();
-        choicesEl.innerHTML = ''; // 正解時にも選択肢をクリア
+        choicesEl.innerHTML = '';
         answerBox.innerText = currentAnswer;
         feedbackBox.innerText = `正解！\n【答え】${quizData[current].a}\n${quizData[current].comment || ''}`;
         feedbackBox.style.opacity = 1;
         nextBtn.style.display = 'inline';
+        
+        // 最終問題の場合はボタンを「結果を見る」に切り替える
+        if (current === quizData.length - 1) {
+          nextBtn.innerText = '結果を見る';
+          nextBtn.onclick = showScore;
+        }
         return;
       }
 
       const currentChar = currentAnswer[index];
       const charType = getCharType(currentChar);
 
-      choicesEl.innerHTML = ''; // 確実に選択肢をクリア
+      choicesEl.innerHTML = '';
       answerBox.innerText = answerProgress;
 
-      // 文字タイプが「その他」（漢字、記号など）の場合は選択肢を表示せず、自動的に進める
       if (charType === 'other') {
         answerProgress += currentChar;
         showChoicesForNextChar();
@@ -210,12 +234,17 @@
           } else {
             stopTimer();
             wrongSound.play();
-            choicesEl.innerHTML = ''; // 不正解時にも選択肢をクリア
+            choicesEl.innerHTML = '';
             answerBox.innerText = answerProgress + '...';
             feedbackBox.innerText = `不正解…\n【正解】${quizData[current].a}\n${quizData[current].comment || ''}`;
             feedbackBox.style.opacity = 1;
             score -= 20;
             nextBtn.style.display = 'inline';
+            // 最終問題の場合はボタンを「結果を見る」に切り替える
+            if (current === quizData.length - 1) {
+              nextBtn.innerText = '結果を見る';
+              nextBtn.onclick = showScore;
+            }
           }
         };
         choicesEl.appendChild(div);
@@ -249,15 +278,6 @@
       clearInterval(answerTimer);
     }
 
-    nextBtn.onclick = () => {
-      current++;
-      if (current < quizData.length) {
-        showQuestion();
-      } else {
-        showScore();
-      }
-    };
-
     function showScore() {
       clearTimers();
 
@@ -271,8 +291,10 @@
       if (score > bestScore) bestScore = score;
       bestBox.innerHTML = `ベストスコア：${bestScore} / ${quizData.length * 100}`;
       startBtn.style.display = 'inline';
+      // 結果表示後、次のゲーム開始に備えてボタンテキストをリセット
+      nextBtn.innerText = '次の問題'; 
+      nextBtn.onclick = handleNextQuestion;
     }
   </script>
 </body>
 </html>
-
