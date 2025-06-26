@@ -4,57 +4,14 @@
   <meta charset="UTF-8" />
   <title>縣陵クイズ完全版</title>
   <style>
-    body {
-      font-family: sans-serif;
-      background: #f8f8f8;
-      text-align: center;
-      padding: 20px;
-    }
-    .question-box {
-      font-size: 1.5em;
-      min-height: 100px;
-      margin: 20px auto;
-      width: 80%;
-      white-space: pre-wrap;
-    }
-    .choices {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 10px;
-    }
-    .choice {
-      padding: 10px 20px;
-      background: #ddd;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 1.3em;
-      transition: background 0.3s ease;
-      user-select: none;
-    }
-    .choice:hover {
-      background: #bbb;
-    }
-    #startBtn,
-    #nextBtn,
-    #buzzBtn {
-      padding: 10px 20px;
-      font-size: 1.2em;
-      margin-top: 10px;
-      cursor: pointer;
-    }
-    #timer,
-    #answerBox,
-    #scoreBox,
-    #bestScoreBox,
-    #feedbackBox {
-      margin-top: 20px;
-      font-size: 1.2em;
-    }
-    #feedbackBox {
-      transition: opacity 0.6s ease;
-      white-space: pre-wrap;
-    }
+    body { font-family: sans-serif; background: #f8f8f8; text-align: center; padding: 20px; }
+    .question-box { font-size: 1.5em; min-height: 100px; margin: 20px auto; width: 80%; }
+    .choices { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+    .choice { padding: 10px 20px; background: #ddd; border-radius: 10px; cursor: pointer; font-size: 1.3em; transition: background 0.3s ease; }
+    .choice:hover { background: #bbb; }
+    #startBtn, #nextBtn, #buzzBtn { padding: 10px 20px; font-size: 1.2em; margin-top: 10px; cursor: pointer; }
+    #timer, #answerBox, #scoreBox, #bestScoreBox, #feedbackBox { margin-top: 20px; font-size: 1.2em; }
+    #feedbackBox { transition: opacity 0.6s ease; white-space: pre-wrap; }
   </style>
 </head>
 <body>
@@ -74,194 +31,193 @@
   <div id="bestScoreBox"></div>
   <button id="startBtn">ゲームスタート</button>
 
-<script>
-  const fullData = [
-    { q:"伝説の文化祭OPは？○○○○サマー", a:"アーリー", comment:"幾度となく塗り替えようとされてきたがいまだにこれを超えるクオリティーの曲は発表されていない。音源は生徒会が管理しており、一般生徒が触れることはできない" },
-    { q:"専門は家族社会学、ジェンダー論、女性学である、日本のフェミニスト・社会学者は？", a:"うえのちづこ", comment:"" },
-    { q:"高校生向け化学の動画を投稿し大学入試センターと戦うチャンネルは？\nOnline Chemistry by ○○○○○", a:"ヒガシマキ", comment:"https://youtu.be/ZvE1JMkcj3A?feature=shared" },
-    { q:"縣陵生になると体育の時間に覚えさせられるものは?", a:"けんりょうたいそう", comment:"「準備体操とは...」" },
-    { q:"質実剛健であれ　大道を闊歩せよ　あとひとつは？", a:"よわねをはくな", comment:"..." },
-    { q:"地球の会←なんて読む？", a:"そらのかい", comment:"..." },
-    { q:"縣陵応援団の言うPTAのAとは?", a:"アルコール", comment:"..." },
-    { q:"小体育館の下に存在している場所は？", a:"ピロティ", comment:"..." },
-    { q:"第76th縣陵祭テーマソングは？", a:"ひゃっぽ", comment:"..." },
-    { q:"焼肉きんぐあがた店はかつてなんだった？", a:"おこほん", comment:"..." },
-    { q:"2学年が探究成果を発表する大会とは？", a:"KRGP", comment:"..." },
-    { q:"お昼に流れる校内放送の名称は？", a:"けんりょうオンエア", comment:"..." },
-    { q:"県ケ丘高校の文化祭の名称は？", a:"けんりょうさい", comment:"..." },
-    { q:"長野県松本市に本部を置く国立大学は？", a:"しんしゅうだいがく", comment:"..." },
-    { q:"中学校や高等学校において、生徒が主体的に学校生活の改善や向上を目指すための組織は？", a:"せいとかい", comment:"..." },
-    { q:"松本市の中心部を走る城下町まつもとの有名観光スポットを巡る周遊バスは？", a:"タウンスニーカー", comment:"..." },
-    { q:"探究活動を行うことを重視した松本県ヶ丘高校の学科は？", a:"たんきゅうか", comment:"..." },
-    { q:"学校で行われる定期的な試験は？", a:"ていきこうさ", comment:"..." },
-    { q:"書籍や記録などを保存・提供する施設は？", a:"としょかん", comment:"..." },
-    { q:"応援練習における、発声練習で発する語は？", a:"け", comment:"..." },
-    { q:"学校教育法で定められた春季休暇は？", a:"はるやすみ", comment:"..." },
-    { q:"数研出版の青チャートと並ぶ参考書（啓林館）は？", a:"フォーカスゴールド", comment:"..." },
-    { q:"応援歌で唯一カタカナ三文字の歌の名前は？", a:"ラララ", comment:"..." },
-    { q:"大学受験で現役合格できなかった人は？", a:"ろうにん", comment:"..." }
-  ];
+  <script>
+    const fullData = [
+      {q:"伝説の文化祭OPは？○○○○サマー", a:"アーリー", comment:"幾度となく塗り替えようとされてきたがいまだにこれを超えるクオリティーの曲は発表されていない。音源は生徒会が管理しており、一般生徒が触れることはできない"},
+      {q:"専門は家族社会学、ジェンダー論、女性学である、日本のフェミニスト・社会学者は？", a:"うえのちづこ", comment:""},
+      {q:"高校生向け化学の動画を投稿し大学入試センターと戦うチャンネルは？\nOnline Chemistry by ○○○○○", a:"ヒガシマキ", comment:"https://youtu.be/ZvE1JMkcj3A?feature=shared"},
+      {q:"縣陵生になると体育の時間に覚えさせられるものは?", a:"けんりょうたいそう", comment:"準備体操とは元々軍隊などで訓練のために行われていたものである。という真偽不明の由来故になかなかハードで準備体操にしては長めな運動を体育の前にやらされる。先生によっては少し喋っただけで最初からやり直しとなる可能性もあり、注意が必要である。なお2年生以降ではその存在は突然無くなり覚えている人間は、強力な洗脳に耐えた1部の者だけであり秘密裏にその存在は語り継がれている。「やる意味が無い」というような発言をした者は1人残らず消されている。"},
+      {q:"質実剛健であれ　大道を闊歩せよ　あとひとつは？", a:"よわねをはくな", comment:"3つから成る我が校に古くから伝わる三大精神である。ほとんどの縣陵生は弱音を吐くなしか知らない。お昼の放送の曲で軽くあしらわれているが、実は在学3年間にこの精神の下、高校生活を遂行したものは殿堂入りを果たすことができる。しかし未だ達成したものはいない。"},
+      {q:"地球の会←なんて読む？", a:"そらのかい", comment:"難読漢字の一種。ただの初見殺し。部活は月1"},
+      {q:"縣陵応援団の言うPTAのAとは?", a:"アルコール", comment:"パチンコ、タバコ、アルコールの略であり縣陵生の誰もが知っている。応援団の「いいかお前らPTAには手を出すなよ」というフレーズは去年流行語大賞に選ばれた。"},
+      {q:"小体育館の下に存在している場所は？", a:"ピロティ", comment:"最初に言われたときはどこのことか全くわからない。特に一年生の物販委販売の時に迷子が目立つ。その利用方法は多岐にわたり、普段はダンス部が利用しているが時には応援団の練習場所としてもつかわれる。大した場所ではないがここまで使わないとあの狭い校舎には人が入りきらない。"}
+    ];
 
-  const HIRAGANA = [..."あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん"];
-  const KATAKANA = [..."アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンー"];
-  const ALPHABET = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"];
+    const HIRAGANA = [..."あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん"];
+    const KATAKANA = [..."アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンー"];
+    const ALPHABET = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"];
 
-  let quizData = [], current = 0, score = 0, bestScore = 0, currentAnswer = "", answerProgress = "", revealTimer = null, startTime = 0;
-  let timer = null, isTimeUp = false;
+    let quizData = [], current = 0, score = 0, bestScore = 0, currentAnswer = "", allowChoice = false, timeUp = false, timer = null, timeLimit = 15;
 
-  const qEl = document.getElementById('question');
-  const choicesEl = document.getElementById('choices');
-  const timerEl = document.getElementById('time');
-  const feedbackBox = document.getElementById('feedbackBox');
-  const scoreBox = document.getElementById('scoreBox');
-  const bestBox = document.getElementById('bestScoreBox');
-  const answerBox = document.getElementById('answerBox');
-  const buzzBtn = document.getElementById('buzzBtn');
-  const nextBtn = document.getElementById('nextBtn');
-  const startBtn = document.getElementById('startBtn');
-  const correctSound = document.getElementById('correctSound');
-  const wrongSound = document.getElementById('wrongSound');
+    const qEl = document.getElementById('question');
+    const choicesEl = document.getElementById('choices');
+    const timerEl = document.getElementById('time');
+    const feedbackBox = document.getElementById('feedbackBox');
+    const scoreBox = document.getElementById('scoreBox');
+    const bestBox = document.getElementById('bestScoreBox');
+    const answerBox = document.getElementById('answerBox');
+    const buzzBtn = document.getElementById('buzzBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const startBtn = document.getElementById('startBtn');
+    const correctSound = document.getElementById('correctSound');
+    const wrongSound = document.getElementById('wrongSound');
 
-  startBtn.onclick = () => {
-    startBtn.style.display = 'none';
-    score = 0;
-    current = 0;
-    quizData = [...fullData].sort(() => Math.random() - 0.5).slice(0, 24);
-    nextBtn.style.display = 'none';
-    isTimeUp = false;
-    showQuestion();
-  };
+    startBtn.onclick = () => {
+      startBtn.style.display = 'none';
+      score = 0;
+      current = 0;
+      quizData = [...fullData].sort(() => Math.random() - 0.5).slice(0, 5);
+      nextBtn.style.display = 'none';
+      feedbackBox.style.opacity = 0;
+      showQuestion();
+    };
 
-  function showQuestion() {
-    qEl.innerText = '';
-    choicesEl.innerHTML = '';
-    feedbackBox.innerText = '';
-    feedbackBox.style.opacity = 0;
-    answerBox.innerText = '';
-    buzzBtn.style.display = 'inline';
-    nextBtn.style.display = 'none';
-    currentAnswer = quizData[current].a;
-    answerProgress = '';
-    isTimeUp = false;
-    let q = quizData[current];
-    let i = 0;
-    startTime = Date.now();
-    revealTimer = setInterval(() => {
-      if (i < q.q.length) {
-        qEl.innerText += q.q[i++];
-      } else {
-        clearInterval(revealTimer);
+    function showQuestion() {
+      qEl.innerText = quizData[current].q;
+      answerBox.innerText = '';
+      feedbackBox.innerText = '';
+      feedbackBox.style.opacity = 0;
+      choicesEl.innerHTML = '';
+      timerEl.innerText = timeLimit;
+      allowChoice = true;
+      timeUp = false;
+      currentAnswer = quizData[current].a;
+
+      generateChoices(currentAnswer);
+
+      startTimer();
+    }
+
+    function generateChoices(answer) {
+      choicesEl.innerHTML = '';
+      let choices = new Set();
+
+      // 1. 正解は必ず選択肢に入れる
+      choices.add(answer);
+
+      // 2. 答えの文字種に合わせて選択肢を生成
+      let isHira = isHiragana(answer);
+      let isKana = isKatakana(answer);
+      let pool = [];
+
+      if (isHira) pool = HIRAGANA;
+      else if (isKana) pool = KATAKANA;
+      else pool = ALPHABET;
+
+      while (choices.size < 4) {
+        let choice = '';
+        for (let i = 0; i < answer.length; i++) {
+          choice += pool[Math.floor(Math.random() * pool.length)];
+        }
+        if (choice !== answer) {
+          choices.add(choice);
+        }
       }
-    }, 150);
-  }
 
-  buzzBtn.onclick = () => {
-    clearInterval(revealTimer);
-    buzzBtn.style.display = 'none';
-    startTimer();
-    showNextChar();
-  };
+      // 選択肢をシャッフル
+      let choiceArr = Array.from(choices);
+      choiceArr.sort(() => Math.random() - 0.5);
 
-  function showNextChar() {
-    if (isTimeUp) return; // 時間切れ後は表示停止
-    let index = answerProgress.length;
-    if (index >= currentAnswer.length) {
+      // 画面に表示
+      choiceArr.forEach(ch => {
+        let btn = document.createElement('button');
+        btn.className = 'choice';
+        btn.innerText = ch;
+        btn.onclick = () => {
+          if (!allowChoice) return;
+          selectAnswer(ch);
+        };
+        choicesEl.appendChild(btn);
+      });
+    }
+
+    function isHiragana(str) {
+      for (let ch of str) {
+        if (!HIRAGANA.includes(ch)) return false;
+      }
+      return true;
+    }
+
+    function isKatakana(str) {
+      for (let ch of str) {
+        if (!KATAKANA.includes(ch)) return false;
+      }
+      return true;
+    }
+
+    function startTimer() {
+      let timeLeft = timeLimit;
+      timerEl.innerText = timeLeft;
+      timer = setInterval(() => {
+        timeLeft--;
+        timerEl.innerText = timeLeft;
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          timeUp = true;
+          allowChoice = false;
+          feedbackBox.style.opacity = 1;
+          feedbackBox.innerText = `時間切れです！\n正解は: ${currentAnswer}`;
+          wrongSound.play();
+          disableChoices();
+          nextBtn.style.display = 'inline';
+        }
+      }, 1000);
+    }
+
+    function stopTimer() {
+      clearInterval(timer);
+    }
+
+    function disableChoices() {
+      Array.from(choicesEl.children).forEach(btn => btn.disabled = true);
+    }
+
+    function selectAnswer(selected) {
+      allowChoice = false;
       stopTimer();
-      let elapsed = (Date.now() - startTime) / 1000;
-      let displayLength = qEl.innerText.length;
-      let fullLength = quizData[current].q.length;
-      let bonus = displayLength <= fullLength / 3 ? 50 : displayLength <= (fullLength * 2 / 3) ? 25 : 10;
-      score += 50 + bonus;
-      correctSound.play();
-      feedbackBox.innerText = `正解！\n【答え】${quizData[current].a}\n${quizData[current].comment || ''}`;
+      disableChoices();
+
+      if (selected === currentAnswer && !timeUp) {
+        score++;
+        correctSound.play();
+        feedbackBox.innerText = `正解！\n${quizData[current].comment || ''}`;
+      } else {
+        wrongSound.play();
+        feedbackBox.innerText = `不正解！\n正解は: ${currentAnswer}\n${quizData[current].comment || ''}`;
+      }
       feedbackBox.style.opacity = 1;
       nextBtn.style.display = 'inline';
-      return;
     }
-    const pool = getCharPool(currentAnswer[index]);
-    let choices = [currentAnswer[index]];
-    while (choices.length < 6) {
-      let r = pool[Math.floor(Math.random() * pool.length)];
-      if (!choices.includes(r)) choices.push(r);
-    }
-    choices = choices.sort(() => Math.random() - 0.5);
-    choicesEl.innerHTML = '';
-    answerBox.innerText = answerProgress;
-    choices.forEach(c => {
-      let div = document.createElement('div');
-      div.className = 'choice';
-      div.innerText = c;
-      div.onclick = () => {
-        if (isTimeUp) return; // クリック無効化
-        if (c === currentAnswer[index]) {
-          answerProgress += c;
-          showNextChar();
-        } else {
-          stopTimer();
-          wrongSound.play();
-          feedbackBox.innerText = `不正解…\n【正解】${quizData[current].a}\n${quizData[current].comment || ''}`;
-          feedbackBox.style.opacity = 1;
-          score -= 20;
-          nextBtn.style.display = 'inline';
-          // 選択肢操作不可に
-          choicesEl.querySelectorAll('.choice').forEach(el => el.onclick = null);
-        }
-      };
-      choicesEl.appendChild(div);
-    });
-  }
 
-  function getCharPool(char) {
-    if (HIRAGANA.includes(char)) return HIRAGANA;
-    if (KATAKANA.includes(char)) return KATAKANA;
-    return ALPHABET;
-  }
-
-  function startTimer() {
-    let time = 15;
-    timerEl.innerText = time;
-    isTimeUp = false;
-    timer = setInterval(() => {
-      time--;
-      timerEl.innerText = time;
-      if (time <= 0) {
-        stopTimer();
-        isTimeUp = true;
-        wrongSound.play();
-        feedbackBox.innerText = `時間切れ…\n【正解】${quizData[current].a}\n${quizData[current].comment || ''}`;
-        feedbackBox.style.opacity = 1;
-        nextBtn.style.display = 'inline';
-        answerBox.innerText = currentAnswer;
-        choicesEl.innerHTML = ''; // 選択肢非表示
+    nextBtn.onclick = () => {
+      current++;
+      if (current >= quizData.length) {
+        endQuiz();
+      } else {
+        nextBtn.style.display = 'none';
+        feedbackBox.style.opacity = 0;
+        showQuestion();
       }
-    }, 1000);
-  }
+    };
 
-  function stopTimer() {
-    clearInterval(timer);
-  }
+    function endQuiz() {
+      qEl.innerText = 'クイズ終了！';
+      choicesEl.innerHTML = '';
+      timerEl.innerText = '';
+      buzzBtn.style.display = 'none';
+      nextBtn.style.display = 'none';
+      answerBox.innerText = '';
+      feedbackBox.style.opacity = 0;
+      scoreBox.innerText = `あなたのスコア: ${score} / ${quizData.length}`;
 
-  nextBtn.onclick = () => {
-    current++;
-    if (current < quizData.length) {
-      showQuestion();
-    } else {
-      showScore();
+      if (score > bestScore) {
+        bestScore = score;
+        bestBox.innerText = `最高スコア更新！: ${bestScore} / ${quizData.length}`;
+      } else {
+        bestBox.innerText = `最高スコア: ${bestScore} / ${quizData.length}`;
+      }
+      startBtn.style.display = 'inline';
     }
-  };
-
-  function showScore() {
-    qEl.innerText = '';
-    choicesEl.innerHTML = '';
-    timerEl.innerText = '0';
-    answerBox.innerText = '';
-    feedbackBox.innerText = '';
-    nextBtn.style.display = 'none';
-    scoreBox.innerHTML = `今回のスコア：${score} / 500`;
-    if (score > bestScore) bestScore = score;
-    bestBox.innerHTML = `ベストスコア：${bestScore} / 500`;
-    startBtn.style.display = 'inline';
-  }
-</script>
+  </script>
 </body>
 </html>
