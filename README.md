@@ -418,4 +418,64 @@
             
             if (current === quizData.length - 1) {
               nextBtn.innerText = '結果を見る';
-              nextBtn.onclick = showScore
+              nextBtn.onclick = showScore;
+            }
+          }
+        };
+        choicesEl.appendChild(div);
+      });
+    }
+
+    function getCharType(char) {
+      if (/[ぁ-ん]/.test(char)) return 'hiragana';
+      if (/[ァ-ン]/.test(char)) return 'katakana';
+      if (/[a-zA-Z]/.test(char)) return 'alphabet';
+      if (/[0-9]/.test(char)) return 'number';
+      return 'other'; 
+    }
+
+    function getCharPool(type) {
+      switch (type) {
+        case 'hiragana': return HIRAGANA;
+        case 'katakana': return KATAKANA;
+        case 'alphabet': return ALPHABET;
+        case 'number': return NUMBERS;
+        default: return [];
+      }
+    }
+
+    function clearTimers() {
+      clearInterval(revealTimer);
+      clearInterval(answerTimer);
+    }
+
+    function stopTimer() {
+      clearInterval(answerTimer);
+    }
+
+    function showScore() {
+      clearTimers();
+
+      qEl.classList.remove('correct-flash', 'wrong-flash'); 
+      const existingConfetti = document.querySelector('.confetti');
+      if (existingConfetti) {
+        existingConfetti.remove();
+      }
+
+      qEl.innerText = '';
+      choicesEl.innerHTML = '';
+      timerEl.innerText = '0';
+      answerBox.innerText = '';
+      feedbackBox.innerText = '';
+      nextBtn.style.display = 'none';
+      scoreBox.innerHTML = `今回のスコア：${score} / ${quizData.length * 100}`;
+      if (score > bestScore) bestScore = score;
+      bestBox.innerHTML = `ベストスコア：${bestScore} / ${quizData.length * 100}`;
+      startBtn.style.display = 'inline';
+      startBtn.innerText = 'もう一度プレイ'; 
+      nextBtn.innerText = '次の問題'; 
+      nextBtn.onclick = handleNextQuestion;
+    }
+  </script>
+</body>
+</html>
