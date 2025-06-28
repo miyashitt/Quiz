@@ -264,8 +264,9 @@
             startBtn.style.display = 'none';
             score = 0;
             current = 0;
-            quizData = [...fullData].sort(() => Math.random() - 0.5).slice(0, 5);
+            quizData = [...fullData].sort(() => Math.random() - 0.5).slice(0, 5); // 5問に制限
             nextBtn.style.display = 'none';
+            nextBtn.innerText = '次の問題'; // ボタンのテキストをリセット
             showQuestion();
         };
 
@@ -311,11 +312,15 @@
                 feedbackBox.innerText = `正解！\n【答え】${quizData[current].a}\n${quizData[current].comment || ''}`;
                 feedbackBox.style.opacity = 1;
                 choicesEl.innerHTML = ''; // 選択肢を削除
+                updateNextButtonText(); // ボタンのテキストを更新
                 nextBtn.style.display = 'inline';
                 return;
             }
-            const pool = getCharPool(currentAnswer);
-            let choices = [currentAnswer[index]];
+
+            const correctChar = currentAnswer[index];
+            const pool = getCharPool(correctChar); // 現在の文字のタイプに基づいてプールを選択
+
+            let choices = [correctChar];
             while (choices.length < 6) {
                 let r = pool[Math.floor(Math.random() * pool.length)];
                 if (!choices.includes(r)) choices.push(r);
@@ -328,7 +333,7 @@
                 div.className = 'choice';
                 div.innerText = c;
                 div.onclick = () => {
-                    if (c === currentAnswer[index]) {
+                    if (c === correctChar) { // 正しい文字と比較
                         answerProgress += c;
                         showNextChar();
                     } else {
@@ -338,6 +343,7 @@
                         feedbackBox.style.opacity = 1;
                         score -= 20;
                         choicesEl.innerHTML = ''; // 選択肢を削除
+                        updateNextButtonText(); // ボタンのテキストを更新
                         nextBtn.style.display = 'inline';
                     }
                 };
@@ -345,10 +351,13 @@
             });
         }
 
-        function getCharPool(ans) {
-            if (/^[ぁ-ん]+$/.test(ans)) return HIRAGANA;
-            if (/^[ァ-ンー]+$/.test(ans)) return KATAKANA;
-            return ALPHABET;
+        // 引数を単一の文字に変更
+        function getCharPool(char) {
+            if (char.match(/^[ぁ-ん]$/)) return HIRAGANA;
+            if (char.match(/^[ァ-ンー]$/)) return KATAKANA;
+            if (char.match(/^[A-Za-z]$/)) return ALPHABET;
+            // その他の文字（漢字など）の場合は、とりあえずひらがなプールを返すか、エラー処理
+            return HIRAGANA;
         }
 
         function startTimer() {
@@ -363,6 +372,7 @@
                     feedbackBox.innerText = `時間切れ…\n【正解】${quizData[current].a}\n${quizData[current].comment || ''}`;
                     feedbackBox.style.opacity = 1;
                     choicesEl.innerHTML = ''; // 選択肢を削除
+                    updateNextButtonText(); // ボタンのテキストを更新
                     nextBtn.style.display = 'inline';
                 }
             }, 1000);
@@ -370,6 +380,14 @@
 
         function stopTimer() {
             clearInterval(timer);
+        }
+
+        function updateNextButtonText() {
+            if (current + 1 >= quizData.length) {
+                nextBtn.innerText = '結果を見る';
+            } else {
+                nextBtn.innerText = '次の問題';
+            }
         }
 
         nextBtn.onclick = () => {
@@ -392,8 +410,8 @@
             if (score > bestScore) bestScore = score;
             bestBox.innerHTML = `ベストスコア：${bestScore} / 500`;
             startBtn.style.display = 'inline';
+            nextBtn.innerText = '次の問題'; // 結果表示後に次のゲームのためにボタンをリセット
         }
     </script>
 </body>
 </html>
-
