@@ -1,417 +1,646 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>縣陵クイズ完全版</title>
+    <meta charset="UTF-8" />
+    <title>文化祭まとめサイト</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
+        /* CSS Variables for a cohesive design */
+        :root {
+            --primary-color: #4CAF50; /* Greenish */
+            --primary-hover-color: #45a049;
+            --secondary-color: #007bff; /* Blueish */
+            --secondary-hover-color: #0056b3;
+            --text-dark: #333;
+            --text-light: #f8f8f8;
+            --background-gradient-start: #e0f7fa;
+            --background-gradient-end: #c8e6c9;
+            --shadow-light: rgba(0, 0, 0, 0.1);
+            --shadow-medium: rgba(0, 0, 0, 0.2);
+            --accent-color: #ff9800; /* Orange for highlights */
+        }
+
         body {
-            font-family: sans-serif;
-            background: #f8f8f8;
-            text-align: center;
-            padding: 20px;
             margin: 0;
-            box-sizing: border-box;
-        }
-        .question-box {
-            font-size: 1.5em;
-            min-height: 100px;
-            margin: 20px auto;
-            width: 90%; /* スマホ向けに幅を広げる */
-            max-width: 800px; /* PCでの最大幅 */
-            box-sizing: border-box;
-            padding: 10px;
-        }
-        .choices {
+            font-family: 'Noto Sans JP', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--background-gradient-start) 0%, var(--background-gradient-end) 100%);
+            color: var(--text-dark);
+            text-align: center;
+            min-height: 100vh;
             display: flex;
-            flex-wrap: wrap;
+            flex-direction: column;
             justify-content: center;
-            gap: 15px; /* 選択肢の間隔を広げる */
-            margin-top: 20px;
+            align-items: center;
+            user-select: none;
+            overflow: hidden; /* Prevent all scrolling for full-screen effect */
+            transition: opacity 0.5s ease-in-out;
+            opacity: 0; /* JavaScriptでloadedクラスが付与されたら表示 */
         }
-        .choice {
-            padding: 15px 25px; /* 選択肢のパディングを大きくする */
-            background: #ddd;
+
+        body.loaded {
+            opacity: 1;
+        }
+
+        body.virus-active {
+            background-color: #000 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: hidden !important;
+            opacity: 1 !important; /* Force display during virus screen */
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Initial Screen styles */
+        #initial-screen {
+            background: linear-gradient(135deg, var(--background-gradient-start) 0%, var(--background-gradient-end) 100%);
+            color: var(--text-dark);
+            height: 100vh;
+            width: 100vw;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 9997;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+            box-sizing: border-box;
+            animation: fadeInScale 0.8s ease-out forwards;
+        }
+
+        #initial-screen h1 {
+            font-size: 2.8rem;
+            color: var(--primary-color);
+            margin-bottom: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            line-height: 1.3;
+        }
+
+        #initial-screen p {
+            font-size: 1.2rem;
+            margin-bottom: 3rem;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        /* Virus Screen styles */
+        #virus-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000;
+            color: #ff3300;
+            z-index: 999999;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.2rem;
+            overflow: hidden;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            pointer-events: none;
+            animation: noise 0.1s infinite, flicker 0.2s infinite alternate;
+            text-shadow: 0 0 5px #ff0000, 0 0 15px #ff0000;
+        }
+
+        #virus-screen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 0, 0, 0.2);
+            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8da+AAAAAXNSR0IArs4c6QAAABJJREFUGFdjYGBgYGBgYGAAAgABAAyW/71mAAAAAElFTkSuQmCC');
+            background-size: 2px 2px;
+            opacity: 0.7;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        #virus-screen h2 {
+            font-size: 2.8rem;
+            margin-bottom: 2rem;
+            animation: blink-fast 0.3s infinite alternate, glitch 0.5s infinite alternate;
+            width: 90%;
+            text-align: center;
+            box-sizing: border-box;
+            text-shadow: 0 0 15px #f00, 0 0 30px #f00; /* Stronger shadow */
+        }
+
+        #countdown {
+            font-size: 7rem; /* Larger countdown */
+            font-weight: bold;
+            color: #00ff00;
+            text-shadow: 0 0 8px #00ff00, 0 0 25px #00ff00; /* Stronger shadow */
+            margin-bottom: 1.5rem;
+            width: 90%;
+            text-align: center;
+            box-sizing: border-box;
+            animation: glitch 0.3s infinite alternate, scanlines 0.1s infinite;
+        }
+
+        #reveal-message {
+            font-size: 1.5rem; /* Larger reveal message */
+            color: #f0f0f0;
+            background-color: rgba(0, 0, 0, 0.85); /* Slightly darker background */
+            padding: 1.5rem;
+            border-radius: 8px; /* More rounded */
+            display: none;
+            margin-top: 2rem;
+            animation: fade-in 0.8s forwards;
+            max-width: 85%;
+            box-sizing: border-box;
+            text-align: center;
+            line-height: 1.6;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        @keyframes fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes blink-fast {
+            0% { opacity: 1; }
+            49% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(2px, -2px); }
+            40% { transform: translate(-1px, 1px); }
+            60% { transform: translate(-2px, -1px); }
+            80% { transform: translate(1px, 2px); }
+            100% { transform: translate(0); }
+        }
+
+        @keyframes noise {
+            0% { opacity: 0.05; }
+            10% { opacity: 0.1; }
+            20% { opacity: 0.08; }
+            30% { opacity: 0.15; }
+            40% { opacity: 0.03; }
+            50% { opacity: 0.12; }
+            60% { opacity: 0.07; }
+            70% { opacity: 0.18; }
+            80% { opacity: 0.06; }
+            90% { opacity: 0.11; }
+            100% { opacity: 0.04; }
+        }
+
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        @keyframes scanlines {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 20px; }
+        }
+
+        /* Relief Screen Styles */
+        #relief-screen {
+            background: linear-gradient(45deg, #e0f7fa, #b2ebf2); /* Brighter gradient */
+            color: #006064;
+            height: 100vh;
+            width: 100vw;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 9998;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            font-size: 2rem; /* Larger font */
+            font-weight: 500;
+            display: none;
+            user-select: text;
+            animation: fade-in 0.8s ease-in-out;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.1); /* Subtle text shadow */
+        }
+
+        #relief-screen p {
+            margin: 0.8rem 0; /* More spacing */
+        }
+
+        /* Main Content Styles */
+        #main {
+            padding: 2.5rem;
+            background: transparent;
+            min-height: 100vh;
+            width: 100vw;
+            position: fixed;
+            top: 0;
+            left: 0;
+            color: var(--text-dark);
+            user-select: none;
+            display: none; /* Hidden by default */
+            border-radius: 16px;
+            box-shadow: none;
+            margin-top: 0;
+            box-sizing: border-box;
+            animation: fadeInScale 0.8s ease-out forwards;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        #main.visible {
+            display: flex;
+        }
+
+        /* Navigation Button Styles */
+        .nav-buttons {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .nav-buttons button {
+            width: 90%;
+            max-width: 300px;
+            background-color: var(--secondary-color);
+            border: none;
+            padding: 1.4rem 2rem;
+            font-size: 1.6rem;
+            font-weight: 600;
             border-radius: 10px;
+            color: var(--text-light);
             cursor: pointer;
-            font-size: 1.4em; /* フォントサイズを大きくする */
-            transition: background 0.3s ease;
-            flex: 1 1 auto; /* 選択肢が自動的に幅を調整し、折り返すようにする */
-            min-width: 120px; /* 選択肢の最小幅 */
-            max-width: 200px; /* 選択肢の最大幅 */
+            box-shadow: 0 6px 12px var(--shadow-medium);
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.8rem;
+            white-space: nowrap;
             box-sizing: border-box;
         }
-        .choice:hover {
-            background: #bbb;
+
+        .nav-buttons button:hover {
+            background-color: var(--secondary-hover-color);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 16px var(--shadow-medium);
         }
-        #startBtn, #nextBtn, #buzzBtn {
-            padding: 12px 25px; /* ボタンのパディングを大きくする */
-            font-size: 1.3em; /* ボタンのフォントサイズを大きくする */
-            margin-top: 20px;
-            cursor: pointer;
-            border: none;
-            border-radius: 8px;
-            background-color: #007bff;
-            color: white;
-            transition: background-color 0.3s ease;
+
+        .share-icon {
+            font-size: 1.6rem;
         }
-        #startBtn:hover, #nextBtn:hover, #buzzBtn:hover {
-            background-color: #0056b3;
-        }
-        #timer, #answerBox, #scoreBox, #bestScoreBox, #feedbackBox {
-            margin-top: 20px;
-            font-size: 1.3em; /* フォントサイズを大きくする */
-            line-height: 1.5; /* 行の高さを調整 */
-        }
-        #feedbackBox {
-            opacity: 0;
-            transition: opacity 0.6s ease;
-            padding: 10px;
-            background-color: #e9ecef;
-            border-radius: 8px;
-            margin: 20px auto;
-            width: 90%;
-            max-width: 600px;
-        }
-        /* スマホ向けの調整 */
-        @media (max-width: 600px) {
-            body {
-                padding: 10px;
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-buttons button {
+                padding: 1.2rem 1.8rem;
+                font-size: 1.4rem;
             }
-            .question-box {
-                font-size: 1.3em;
+            .share-icon {
+                font-size: 1.4rem;
+            }
+            #virus-screen h2 {
+                font-size: 2.2rem;
+            }
+            #countdown {
+                font-size: 5rem;
+            }
+            #reveal-message {
+                font-size: 1.2rem;
+                padding: 1.2rem;
+            }
+            #initial-screen h1 {
+                font-size: 2.2rem;
+                margin-bottom: 2rem;
+            }
+            #initial-screen p {
+                font-size: 1.1rem;
+                margin-bottom: 2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-buttons {
+                gap: 1rem;
+            }
+            .nav-buttons button {
                 width: 95%;
+                padding: 1rem 1.5rem;
+                font-size: 1.3rem;
+                max-width: none;
             }
-            .choice {
-                font-size: 1.2em;
-                padding: 12px 20px;
-                min-width: unset; /* スマホでは最小幅を解除 */
-                width: 45%; /* 2列表示 */
+            .share-icon {
+                font-size: 1.3rem;
             }
-            #startBtn, #nextBtn, #buzzBtn {
-                font-size: 1.1em;
-                padding: 10px 20px;
+            #virus-screen h2 {
+                font-size: 1.8rem;
+                margin-bottom: 0.8rem;
             }
-            #timer, #answerBox, #scoreBox, #bestScoreBox, #feedbackBox {
-                font-size: 1.1em;
+            #countdown {
+                font-size: 4rem;
+            }
+            #reveal-message {
+                font-size: 1rem;
+                padding: 0.8rem;
+            }
+            #initial-screen h1 {
+                font-size: 1.8rem;
+                margin-bottom: 1.5rem;
+            }
+            #initial-screen p {
+                font-size: 1.0rem;
+                margin-bottom: 1.5rem;
             }
         }
     </style>
 </head>
 <body>
-    <h1>縣陵百科クイズ</h1>
-    <audio id="bgm" src="https://cdn.pixabay.com/download/audio/2023/03/14/audio_ef16bc184b.mp3?filename=fun-pop-music-14550.mp3" loop autoplay></audio>
-    <audio id="correctSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_e4c2590b01.mp3?filename=correct-answer-2-109766.mp3"></audio>
-    <audio id="wrongSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_f1fc1bb3f7.mp3?filename=wrong-answer-3-204254.mp3"></audio>
+    <div id="virus-screen" role="alert" aria-live="assertive" aria-atomic="true" class="hidden">
+        </div>
 
-    <div class="question-box" id="question"></div>
-    <div id="timer">制限時間: <span id="time">15</span>秒</div>
-    <div id="answerBox"></div>
-    <button id="buzzBtn" style="display:none;">早押し！</button>
-    <div class="choices" id="choices"></div>
-    <div id="feedbackBox"></div>
-    <button id="nextBtn" style="display:none;">次の問題</button>
-    <div id="scoreBox"></div>
-    <div id="bestScoreBox"></div>
-    <button id="startBtn">ゲームスタート</button>
+    <div id="relief-screen" class="hidden" role="region" aria-live="polite" aria-atomic="true">
+        <p>冗談だよ😊</p>
+        <p>文化祭を楽しんで</p>
+    </div>
 
-    <script>
-        const fullData = [
-            {
-                q: "伝説の文化祭OPは？○○○○サマー",
-                a: "アーリー",
-                comment: "幾度となく塗り替えようとされてきたがいまだにこれを超えるクオリティーの曲は発表されていない。音源は生徒会が管理しており、一般生徒が触れることはできない"
-            },
-            {
-                q: "専門は家族社会学、ジェンダー論、女性学である、日本のフェミニスト・社会学者は？",
-                a: "うえのちづこ",
-                comment: ""
-            },
-            {
-                q: "高校生向け化学の動画を投稿し大学入試センターと戦うチャンネルは？Online Chemistry by ○○○○○",
-                a: "ヒガシマキ",
-                comment: "https://youtu.be/ZvE1JMkcj3A?feature=shared"
-            },
-            {
-                q: "縣陵生になると体育の時間に覚えさせられるものは?",
-                a: "けんりょうたいそう",
-                comment: "「準備体操とは元々軍隊などで訓練のために行われていたものである。」という真偽不明の由来故になかなかハードで準備体操にしては長めな運動を体育の前にやらされる。先生によっては少し喋っただけで最初からやり直しとなる可能性もあり、注意が必要である。なお2年生以降ではその存在は突然無くなり覚えている人間は、強力な洗脳に耐えた1部の者だけであり秘密裏にその存在は語り継がれている。「やる意味が無い」というような発言をした者は1人残らず消されている。"
-            },
-            {
-                q: "質実剛健であれ　大道を闊歩せよ　あとひとつは？",
-                a: "よわねをはくな",
-                comment: "3つから成る我が校に古くから伝わる三大精神である。ほとんどの縣陵生は弱音を吐くなしか知らない。お昼の放送の曲で軽くあしらわれているが、実は在学3年間にこの精神の下、高校生活を遂行したものは殿堂入りを果たすことができる。しかし未だ達成したものはいない。"
-            },
-            {
-                q: "地球の会←なんて読む？",
-                a: "そらのかい",
-                comment: "難読漢字の一種。ただの初見殺し。部活は月1"
-            },
-            {
-                q: "縣陵応援団の言うPTAのAとは?",
-                a: "アルコール",
-                comment: "パチンコ、タバコ、アルコールの略であり縣陵生の誰もが知っている。応援団の「いいかお前らPTAには手を出すなよ」というフレーズは去年流行語大賞に選ばれた。"
-            },
-            {
-                q: "小体育館の下に存在している場所は？",
-                a: "ピロティ",
-                comment: "最初に言われたときはどこのことか全くわからない。特に一年生の物販委販売の時に迷子が目立つ。その利用方法は多岐にわたり、普段はダンス部が利用しているが時には応援団の練習場所としてもつかわれる。大した場所ではないがここまで使わないとあの狭い校舎には人が入りきらない。"
-            },
-            {
-                q: "第76th縣陵祭テーマソングは？",
-                a: "ひゃっぽ",
-                comment: "神曲。もうすぐでYouTube1万回再生される、第76回縣陵祭のテーマソングである。下級生から神と称えられるメンバーにより作詞作曲された。ほんと神曲。好き。https://youtu.be/9EJMJH15_Go?feature=shared"
-            },
-            {
-                q: "焼肉きんぐあがた店はかつてなんだった？",
-                a: "おこほん",
-                comment: "広丘駅に大きな店舗があり、昔はすべての縣陵生徒がそこでパーティーをしていた。ただしおこほん運営も縣陵生が消費量の大半を占めていることを知り、松本県店を進出させた。今では焼肉きんぐに。"
-            },
-            {
-                q: "2学年が探究成果を発表する大会とは？",
-                a: "KRGP",
-                comment: "優秀賞が普通科から3名、探究科から3名、計6名選出され、その中から大賞が1名大学の教授や校長によって選ばれる。"
-            },
-            {
-                q: "お昼に流れる校内放送の名称は？",
-                a: "けんりょうオンエア",
-                comment: "独立したメディアかと思えばコンテンツ内容に関しては生徒会が一枚かんでいる。要するに縣陵版のN〇Kである。"
-            },
-            {
-                q: "県ケ丘高校の文化祭の名称は？",
-                a: "けんりょうさい",
-                comment: "入場者は5000人程で山形村の人口くらい。毎年この準備のため生徒会役員は官僚レベルの重労働が強制される。"
-            },
-            {
-                q: "8つの学部と6つの大学院を持つ総合大学で、学部には人文学部、教育学部、経法学部、理学部、医学部、工学部、農学部、繊維学部がある、長野県松本市に本部を置く国立大学は？",
-                a: "しんしゅうだいがく",
-                comment: "縣陵生が実質支配しているといっても過言ではない大学。松本にもキャンパスがあり、一年生は全員松本で過ごすので松本のことをよく知っている縣陵生は少し優位に立てるといわれいている。しかも実家通いのためお金の心配をしなくてもよい。"
-            },
-            {
-                q: "中学校や高等学校において、生徒が主体的に学校生活の改善や向上を目指すための組織は？",
-                a: "せいとかい",
-                comment: "事実上の独裁体制を敷いていると思われがちだが、アニメやラノベ小説の世界ほど権力は高くない。"
-            },
-            {
-                q: "松本市の中心部を走る城下町まつもとの有名観光スポットを巡るのにぴったりな周遊バスは？",
-                a: "タウンスニーカー",
-                comment: "学校から松本駅までの間を送迎してくれるサービス。雨の日は特に使用率が高く学校前のバス停には長蛇の列ができる。7月豪雨の際にはバス待ちの生徒の列が松本駅まで続いたという。"
-            },
-            {
-                q: "基礎的な学力に加え、知識を総合的に活用する能力や、課題解決力、創造力、表現力を養うことを目的とする、生徒が自ら課題を設定し、解決に向けて探究活動を行うことを重視した松本県ヶ丘高校の学科は？",
-                a: "たんきゅうか",
-                comment: "英語科を前身として生み出された精鋭部隊。週2回の探究の授業を組み込むために授業進度はかなり無理をして頑張っている。倍率は年々異なるがだいたい2倍近くあり小論文がどんどん難しくなっている。変人:変態:常人＝5:4:1"
-            },
-            {
-                q: "学校で、各教科の学習成果を評価するために、定期的に行われる試験は？",
-                a: "ていきこうさ",
-                comment: "全校強制参加のエクストリームスポーツ。年5回ほど行われていて、英気を養うための7日間というものがテスト前に設けられている。生徒たちはこの期間に日々の生活時間の乱れを回復するために睡眠時間を多くとる"
-            },
-            {
-                q: "書籍や記録などの資料を収集・整理・保存し、一般の人々が利用できるように提供する施設は？",
-                a: "としょかん",
-                comment: "本を読むまたは借りる目的で使う人は存在しない。治外法権が適応されている場所であり、授業をサボることが罪に問われない。ただし文系科目の自習の時間に使われることがまれにあるため、容易に授業中逃げ込むことは避けた方が良い。"
-            },
-            {
-                q: "応援練習における、発声練習で発する語は？",
-                a: "け",
-                comment: ""
-            },
-            {
-                q: "学校教育法で定められた春季休暇は？",
-                a: "はるやすみ",
-                comment: "春休みと呼ばれる期間はたった2週間以下だが、３月はなんだかんだ休みがたくさんあるので困ることはない。春が来たからと言って君の彼女いない歴＝年齢の呪いが終わるわけではないのでせいぜい頑張ってほしい。お決まり通り課題は鬼。"
-            },
-            {
-                q: "数研出版から出版されている高校数学の網羅系参考書で、一般に上から二番目の難易度とされる問題集は青チャートであるが、それと比較されがちな啓林館が出版しているマスター編、チャレンジ編、実践編で構成される参考書は？",
-                a: "フォーカスゴールド",
-                comment: "世間一般でも使われている標準的な数学参考書。その使い方は実に多様であり漬物石、トレーニング、鈍器、聖書…etc.　"
-            },
-            {
-                q: "松本県ヶ丘高等学校の応援歌において1つだけ毛色の異なる応援歌はカタカナ三文字で？",
-                a: "ラララ",
-                comment: "応援歌の一つ。その歌い出しと、途中の掛け声が特徴である。1年生のうちは応援団の恐怖により触れることを畏れるが、2・3年生になると仲間内でふざけている最中に「ラーラーラ　そーーれ」という掛け声とともに歌い出す。"
-            },
-            {
-                q: "主に大学受験において、現役で志望校に合格できず、もう一年受験勉強に励む人のことをなんと言う？",
-                a: "ろうにん",
-                comment: "楽しい高校生活をもう一年行えるエクストリームスポーツ。"
-            }
-        ];
+    <div id="initial-screen" role="region" aria-label="文化祭特設サイトへようこそ">
+        <h1>ようこそ！文化祭特設サイトへ</h1>
+        <p>文化祭の情報を公開しています。</p>
+        <div class="nav-buttons">
+            <button id="trigger-virus-btn" type="button">
+                <span class="share-icon"></span> 文化祭情報を見る
+            </button>
+        </div>
+    </div>
 
-        const HIRAGANA = [..."あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん"];
-        const KATAKANA = [..."アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンー"];
-        const ALPHABET = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"];
+    <div id="main" role="main" aria-label="文化祭まとめコンテンツ" class="hidden">
+        <div class="nav-buttons">
+            <button id="repeat-virus-btn" type="button">
+                <span class="share-icon"></span> もう一度ウイルス演出を見る
+            </button>
+            <button id="show-bunkasai-info-btn" type="button">
+                <span class="share-icon"></span> 文化祭情報
+            </button>
+            <button id="show-quiz-minigame-btn" type="button">
+                <span class="share-icon"></span> クイズ
+            </button>
+            <button class="share-btn share-x" role="button" tabindex="0" data-sns="x" title="Xで共有" aria-label="Xで共有">
+                <span class="share-icon"></span> 𝕏で共有
+            </button>
+            <button class="share-btn share-line" role="button" tabindex="0" data-sns="line" title="LINEで共有" aria-label="LINEで共有">
+                <span class="share-icon"></span> LINEで共有
+            </button>
+        </div>
+    </div>
 
-        let quizData = [], current = 0, score = 0, bestScore = 0, currentAnswer = "", answerProgress = "", revealTimer = null, startTime = 0;
+    <script defer>
+        document.addEventListener("DOMContentLoaded", () => {
+            // --- Constants ---
+            const LOCAL_STORAGE_KEY = "bunkasai_visited";
+            const VIRUS_COUNTDOWN_SECONDS = 5;
+            // The quiz URL has been updated here:
+            const QUIZ_SITE_URL = "https://miyashitt.github.io/Quiz/";
+            const BUNKASAI_INSTAGRAM_URL = "https://www.instagram.com/kenryo_fes_78th?utm_source=ig_web_button_share_sheet&igsh=MWkyZDRrbjRuYnl6ag==";
 
-        const qEl = document.getElementById('question');
-        const choicesEl = document.getElementById('choices');
-        const timerEl = document.getElementById('time');
-        const feedbackBox = document.getElementById('feedbackBox');
-        const scoreBox = document.getElementById('scoreBox');
-        const bestBox = document.getElementById('bestScoreBox');
-        const answerBox = document.getElementById('answerBox');
-        const buzzBtn = document.getElementById('buzzBtn');
-        const nextBtn = document.getElementById('nextBtn');
-        const startBtn = document.getElementById('startBtn');
-        const correctSound = document.getElementById('correctSound');
-        const wrongSound = document.getElementById('wrongSound');
+            // --- DOM Elements ---
+            const body = document.body;
+            const initialScreen = document.getElementById("initial-screen");
+            const virusScreen = document.getElementById("virus-screen");
+            const reliefScreen = document.getElementById("relief-screen");
+            const mainScreen = document.getElementById("main");
 
-        let timer = null;
+            const triggerVirusBtn = document.getElementById("trigger-virus-btn");
+            const repeatVirusBtn = document.getElementById("repeat-virus-btn");
+            const showBunkasaiInfoBtn = document.getElementById("show-bunkasai-info-btn");
+            const showQuizMinigameBtn = document.getElementById("show-quiz-minigame-btn");
+            const shareButtons = document.querySelectorAll('.share-btn');
 
-        startBtn.onclick = () => {
-            startBtn.style.display = 'none';
-            score = 0;
-            current = 0;
-            quizData = [...fullData].sort(() => Math.random() - 0.5).slice(0, 5); // 5問に制限
-            nextBtn.style.display = 'none';
-            nextBtn.innerText = '次の問題'; // ボタンのテキストをリセット
-            showQuestion();
-        };
+            // --- Global Variables for State Management ---
+            let speechSynth = window.speechSynthesis;
+            let currentUtterance = null;
+            let alarmAudio = null;
+            let isVoiceLoopActive = false;
+            let countdownTimerId = null; // Stores the setTimeout ID for the countdown
+            const isLineBrowserDetected = navigator.userAgent.includes("Line");
 
-        function showQuestion() {
-            qEl.innerText = '';
-            choicesEl.innerHTML = '';
-            feedbackBox.innerText = '';
-            feedbackBox.style.opacity = 0;
-            answerBox.innerText = '';
-            buzzBtn.style.display = 'inline';
-            nextBtn.style.display = 'none';
-            currentAnswer = quizData[current].a;
-            answerProgress = '';
-            let q = quizData[current];
-            let i = 0;
-            startTime = Date.now();
-            revealTimer = setInterval(() => {
-                if (i < q.q.length) {
-                    qEl.innerText += q.q[i++];
-                } else {
-                    clearInterval(revealTimer);
+            // --- Audio and Speech Functions ---
+
+            /**
+             * Initializes and plays an alarm sound.
+             */
+            function playAlarmSound() {
+                if (alarmAudio) {
+                    alarmAudio.pause();
+                    alarmAudio.currentTime = 0;
                 }
-            }, 150);
-        }
-
-        buzzBtn.onclick = () => {
-            clearInterval(revealTimer);
-            buzzBtn.style.display = 'none';
-            startTimer();
-            showNextChar();
-        };
-
-        function showNextChar() {
-            let index = answerProgress.length;
-            if (index >= currentAnswer.length) {
-                stopTimer();
-                let elapsed = (Date.now() - startTime) / 1000;
-                let displayLength = document.getElementById('question').innerText.length;
-                let fullLength = quizData[current].q.length;
-                let bonus = displayLength <= fullLength / 3 ? 50 : displayLength <= (fullLength * 2 / 3) ? 25 : 10;
-                score += 50 + bonus;
-                correctSound.play();
-                feedbackBox.innerText = `正解！\n【答え】${quizData[current].a}\n${quizData[current].comment || ''}`;
-                feedbackBox.style.opacity = 1;
-                choicesEl.innerHTML = ''; // 選択肢を削除
-                updateNextButtonText(); // ボタンのテキストを更新
-                nextBtn.style.display = 'inline';
-                return;
+                alarmAudio = new Audio('alarm.mp3');
+                alarmAudio.loop = true;
+                alarmAudio.volume = 0.5;
+                alarmAudio.play().catch(e => console.error("Error playing audio:", e));
             }
 
-            const correctChar = currentAnswer[index];
-            const pool = getCharPool(correctChar); // 現在の文字のタイプに基づいてプールを選択
-
-            let choices = [correctChar];
-            while (choices.length < 6) {
-                let r = pool[Math.floor(Math.random() * pool.length)];
-                if (!choices.includes(r)) choices.push(r);
+            /**
+             * Speaks the given text using the Web Speech API.
+             * @param {string} text - The text to be spoken.
+             */
+            function speakText(text) {
+                if (speechSynth.speaking) {
+                    speechSynth.cancel();
+                }
+                currentUtterance = new SpeechSynthesisUtterance(text);
+                currentUtterance.lang = 'ja-JP';
+                currentUtterance.rate = 1.0;
+                currentUtterance.pitch = 1.0;
+                currentUtterance.volume = 0.7;
+                speechSynth.speak(currentUtterance);
             }
-            choices = choices.sort(() => Math.random() - 0.5);
-            choicesEl.innerHTML = '';
-            answerBox.innerText = answerProgress;
-            choices.forEach(c => {
-                let div = document.createElement('div');
-                div.className = 'choice';
-                div.innerText = c;
-                div.onclick = () => {
-                    if (c === correctChar) { // 正しい文字と比較
-                        answerProgress += c;
-                        showNextChar();
-                    } else {
-                        stopTimer();
-                        wrongSound.play();
-                        feedbackBox.innerText = `不正解…\n【正解】${quizData[current].a}\n${quizData[current].comment || ''}`;
-                        feedbackBox.style.opacity = 1;
-                        score -= 20;
-                        choicesEl.innerHTML = ''; // 選択肢を削除
-                        updateNextButtonText(); // ボタンのテキストを更新
-                        nextBtn.style.display = 'inline';
+
+            /**
+             * Starts a continuous voice loop for the virus message.
+             */
+            function startVoiceLoop() {
+                isVoiceLoopActive = true;
+                function loop() {
+                    if (!isVoiceLoopActive) return;
+                    speakText("デバイスはウイルスに感染しました");
+                    currentUtterance.onend = () => {
+                        if (isVoiceLoopActive) {
+                            setTimeout(loop, 3000); // Repeat after 3 seconds
+                        }
+                    };
+                }
+                loop(); // Start the first loop
+            }
+
+            /**
+             * Stops the voice loop and alarm sound.
+             */
+            function stopVoiceAndAlarm() {
+                isVoiceLoopActive = false;
+                if (speechSynth.speaking) {
+                    speechSynth.cancel();
+                }
+                if (alarmAudio) {
+                    alarmAudio.pause();
+                    alarmAudio.currentTime = 0;
+                }
+            }
+
+            // --- Screen Management Functions ---
+
+            /**
+             * Resets and initiates the virus simulation.
+             */
+            function startVirusSimulation() {
+                // Clear any ongoing countdown or audio
+                if (countdownTimerId) {
+                    clearTimeout(countdownTimerId);
+                }
+                stopVoiceAndAlarm();
+
+                // Set up virus screen content
+                virusScreen.innerHTML = `
+                    <h2><span style="color:red;">警告!!!</span> デバイスはウイルスに侵害されました。</h2>
+                    <div id="countdown" style="color: #00FF00;">${VIRUS_COUNTDOWN_SECONDS}</div>
+                    <div id="reveal-message" class="hidden">
+                        <h3>これは文化祭の告知です！</h3>
+                        <p><strong>文化祭の日程や見どころはInstagram公式アカウントをチェック！</strong></p>
+                        <p>最新情報をGETして文化祭を楽しもう！</p>
+                        <p>※偽のウイルス演出はこれで終了です。</p>
+                        <a href="${BUNKASAI_INSTAGRAM_URL}" target="_blank" style="color: #66ccff; text-decoration: underline; font-weight: bold;">Instagram公式アカウントへ</a>
+                    </div>
+                `;
+
+                // Show virus screen and hide others
+                body.classList.add("virus-active");
+                initialScreen.classList.add("hidden");
+                mainScreen.classList.add("hidden");
+                reliefScreen.classList.add("hidden");
+                virusScreen.classList.remove("hidden");
+                virusScreen.style.pointerEvents = 'none'; // Disable interaction during countdown
+
+                // Play audio only if not in LINE browser
+                if (!isLineBrowserDetected) {
+                    speakText("デバイスはウイルスに感染しました");
+                    startVoiceLoop();
+                    playAlarmSound();
+                }
+
+                let countdown = VIRUS_COUNTDOWN_SECONDS;
+                const countdownElement = document.getElementById("countdown");
+                const revealMessage = document.getElementById("reveal-message");
+
+                function runCountdown() {
+                    if (countdownElement) { // Ensure element exists before updating
+                        countdownElement.textContent = countdown;
                     }
-                };
-                choicesEl.appendChild(div);
-            });
-        }
 
-        // 引数を単一の文字に変更
-        function getCharPool(char) {
-            if (char.match(/^[ぁ-ん]$/)) return HIRAGANA;
-            if (char.match(/^[ァ-ンー]$/)) return KATAKANA;
-            if (char.match(/^[A-Za-z]$/)) return ALPHABET;
-            // その他の文字（漢字など）の場合は、とりあえずひらがなプールを返すか、エラー処理
-            return HIRAGANA;
-        }
+                    if (countdown <= 0) {
+                        if (countdownTimerId) {
+                            clearTimeout(countdownTimerId);
+                        }
+                        countdownElement?.classList.add("hidden"); // Use optional chaining for safety
+                        revealMessage?.classList.remove("hidden");
+                        stopVoiceAndAlarm();
+                        virusScreen.style.pointerEvents = 'auto'; // Enable interaction after reveal
 
-        function startTimer() {
-            let time = 15;
-            timerEl.innerText = time;
-            timer = setInterval(() => {
-                time--;
-                timerEl.innerText = time;
-                if (time <= 0) {
-                    stopTimer();
-                    wrongSound.play();
-                    feedbackBox.innerText = `時間切れ…\n【正解】${quizData[current].a}\n${quizData[current].comment || ''}`;
-                    feedbackBox.style.opacity = 1;
-                    choicesEl.innerHTML = ''; // 選択肢を削除
-                    updateNextButtonText(); // ボタンのテキストを更新
-                    nextBtn.style.display = 'inline';
+                        setTimeout(() => {
+                            virusScreen.classList.add("hidden");
+                            reliefScreen.classList.remove("hidden");
+                            reliefScreen.style.display = 'flex'; // Explicitly set display for relief screen fade-in
+
+                            setTimeout(() => {
+                                reliefScreen.classList.add("hidden");
+                                reliefScreen.style.display = 'none'; // Hide relief screen
+                                mainScreen.classList.remove("hidden");
+                                mainScreen.classList.add("visible");
+                                body.classList.remove("virus-active");
+                                localStorage.setItem(LOCAL_STORAGE_KEY, "true"); // Set flag that virus has played
+                            }, 2000); // Hide relief, show main after 2 seconds
+                        }, 3000); // Show reveal message for 3 seconds
+                    } else {
+                        countdown--;
+                        countdownTimerId = setTimeout(runCountdown, 1000); // Schedule next tick
+                    }
                 }
-            }, 1000);
-        }
 
-        function stopTimer() {
-            clearInterval(timer);
-        }
-
-        function updateNextButtonText() {
-            if (current + 1 >= quizData.length) {
-                nextBtn.innerText = '結果を見る';
-            } else {
-                nextBtn.innerText = '次の問題';
+                // Start the countdown
+                countdownTimerId = setTimeout(runCountdown, 1000); // Initial delay before first decrement
             }
-        }
 
-        nextBtn.onclick = () => {
-            current++;
-            if (current < quizData.length) {
-                showQuestion();
+            // --- Event Listeners ---
+
+            // Initial fade-in for the body
+            body.classList.add("loaded");
+
+            // Determine which screen to show on initial load based on local storage
+            if (localStorage.getItem(LOCAL_STORAGE_KEY) === "true") {
+                initialScreen.classList.add("hidden");
+                mainScreen.classList.remove("hidden");
+                mainScreen.classList.add("visible");
             } else {
-                showScore();
+                initialScreen.classList.remove("hidden");
             }
-        };
 
-        function showScore() {
-            qEl.innerText = '';
-            choicesEl.innerHTML = '';
-            timerEl.innerText = '0';
-            answerBox.innerText = '';
-            feedbackBox.innerText = '';
-            nextBtn.style.display = 'none';
-            scoreBox.innerHTML = `今回のスコア：${score} / 500`;
-            if (score > bestScore) bestScore = score;
-            bestBox.innerHTML = `ベストスコア：${bestScore} / 500`;
-            startBtn.style.display = 'inline';
-            nextBtn.innerText = '次の問題'; // 結果表示後に次のゲームのためにボタンをリセット
-        }
+            // Initial Screen: "文化祭情報を見る" button
+            triggerVirusBtn.addEventListener("click", startVirusSimulation);
+
+            // Main Screen: "もう一度ウイルス演出を見る" button
+            repeatVirusBtn.addEventListener("click", () => {
+                localStorage.removeItem(LOCAL_STORAGE_KEY); // Allow re-play
+                startVirusSimulation();
+            });
+
+            // Main Screen: "文化祭情報" button
+            showBunkasaiInfoBtn.addEventListener("click", () => {
+                window.open(BUNKASAI_INSTAGRAM_URL, "_blank");
+            });
+
+            // Main Screen: "クイズ" button
+            showQuizMinigameBtn.addEventListener("click", () => {
+                window.open(QUIZ_SITE_URL, "_blank");
+            });
+
+            // Share buttons logic
+            shareButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const sns = button.dataset.sns;
+                    const url = encodeURIComponent(window.location.href);
+                    const text = encodeURIComponent("私たちの文化祭の特設サイトを見てね！\n#文化祭 #高校生活");
+                    let shareUrl = '';
+
+                    switch (sns) {
+                        case 'x':
+                            shareUrl = `https://twitter.com/intent/tweet?url=${url}&text=${text}`;
+                            break;
+                        case 'line':
+                            shareUrl = `https://social-plugins.line.me/lineit/share?url=${url}&text=${text}`;
+                            break;
+                    }
+
+                    if (shareUrl) {
+                        window.open(shareUrl, '_blank');
+                    }
+                });
+            });
+        });
     </script>
 </body>
 </html>
