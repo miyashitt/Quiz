@@ -4,32 +4,161 @@
   <meta charset="UTF-8">
   <title>縣陵クイズ完全版</title>
   <style>
-    body { font-family: sans-serif; background: #f8f8f8; text-align: center; padding: 20px; }
-    .question-box { font-size: 1.5em; min-height: 100px; margin: 20px auto; width: 80%; }
-    .choices { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
-    .choice { padding: 10px 20px; background: #ddd; border-radius: 10px; cursor: pointer; font-size: 1.3em; transition: background 0.3s ease; }
-    .choice:hover { background: #bbb; }
-    #startBtn, #nextBtn, #buzzBtn { padding: 10px 20px; font-size: 1.2em; margin-top: 10px; cursor: pointer; }
-    #timer, #answerBox, #scoreBox, #bestScoreBox, #feedbackBox { margin-top: 20px; font-size: 1.2em; }
-    #feedbackBox { transition: opacity 0.6s ease; }
+    body { 
+      font-family: sans-serif; 
+      background: #f8f8f8; 
+      text-align: center; 
+      padding: 20px; 
+      overflow: hidden; /* 全画面時にスクロールバーが出ないように */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh; /* 画面の高さいっぱいにする */
+    }
+    .container {
+      max-width: 900px;
+      width: 100%;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 20px;
+    }
+    .question-box { 
+      font-size: 1.8em; /* 文字を大きく */
+      min-height: 120px; /* 領域を広げる */
+      margin: 20px auto; 
+      width: 90%; /* 幅を広げる */
+      background: #fff;
+      border: 2px solid #ccc;
+      border-radius: 15px;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      word-wrap: break-word; /* 長い単語も折り返す */
+      transition: background-color 0.3s ease; /* フィードバック用 */
+      position: relative; /* アニメーションの基準 */
+      overflow: hidden; /* 紙吹雪がはみ出さないように */
+    }
+    .choices { 
+      display: flex; 
+      flex-wrap: wrap; 
+      justify-content: center; 
+      gap: 15px; /* 間隔を広げる */
+      margin-top: 30px;
+    }
+    .choice { 
+      padding: 12px 25px; /* パディングを増やす */
+      background: #ddd; 
+      border-radius: 10px; 
+      cursor: pointer; 
+      font-size: 1.5em; /* 文字を大きく */
+      transition: background 0.3s ease, transform 0.1s ease; 
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+    }
+    .choice:hover { 
+      background: #bbb; 
+      transform: translateY(-2px);
+    }
+    #startBtn, #nextBtn, #buzzBtn { 
+      padding: 12px 25px; 
+      font-size: 1.3em; 
+      margin-top: 25px; 
+      cursor: pointer; 
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      box-shadow: 3px 3px 7px rgba(0,0,0,0.3);
+      transition: background 0.3s ease, transform 0.1s ease;
+    }
+    #startBtn:hover, #nextBtn:hover, #buzzBtn:hover {
+      background: #45a049;
+      transform: translateY(-1px);
+    }
+    #timer, #answerBox, #scoreBox, #bestScoreBox, #feedbackBox { 
+      margin-top: 25px; 
+      font-size: 1.4em; 
+      font-weight: bold;
+    }
+    #feedbackBox { 
+      opacity: 0;
+      transition: opacity 0.6s ease; 
+      margin-top: 20px;
+      padding: 10px 20px;
+      border-radius: 10px;
+    }
+
+    /* 正解時のアニメーション */
+    .correct-flash {
+      background-color: #e6ffe6 !important; /* 薄い緑 */
+      box-shadow: 0 0 30px 10px rgba(0, 255, 0, 0.7); /* 緑の光 */
+      animation: correctFlash 0.6s forwards;
+    }
+    @keyframes correctFlash {
+      0% { box-shadow: 0 0 0px 0px rgba(0, 255, 0, 0.7); }
+      50% { box-shadow: 0 0 30px 10px rgba(0, 255, 0, 0.7); }
+      100% { box-shadow: 0 0 0px 0px rgba(0, 255, 0, 0); background-color: #fff; }
+    }
+
+    /* 不正解時のアニメーション */
+    .wrong-flash {
+      background-color: #ffe6e6 !important; /* 薄い赤 */
+      box-shadow: 0 0 30px 10px rgba(255, 0, 0, 0.7); /* 赤い光 */
+      animation: wrongFlash 0.6s forwards;
+    }
+    @keyframes wrongFlash {
+      0% { box-shadow: 0 0 0px 0px rgba(255, 0, 0, 0.7); }
+      50% { box-shadow: 0 0 30px 10px rgba(255, 0, 0, 0.7); }
+      100% { box-shadow: 0 0 0px 0px rgba(255, 0, 0, 0); background-color: #fff; }
+    }
+
+    /* 紙吹雪アニメーション */
+    .confetti {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none; /* クリックを邪魔しない */
+      overflow: hidden;
+    }
+    .confetti-piece {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background-color: #f00; /* デフォルトの色 */
+      transform-origin: center center;
+      opacity: 0;
+      animation: confettiFall 3s forwards;
+    }
+    @keyframes confettiFall {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
   </style>
 </head>
 <body>
-  <h1>縣陵百科クイズ</h1>
-  <audio id="bgm" src="https://cdn.pixabay.com/download/audio/2023/03/14/audio_ef16bc184b.mp3?filename=fun-pop-music-14550.mp3" loop autoplay></audio>
-  <audio id="correctSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_e4c2590b01.mp3?filename=correct-answer-2-109766.mp3"></audio>
-  <audio id="wrongSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_f1fc1bb3f7.mp3?filename=wrong-answer-3-204254.mp3"></audio>
+  <div class="container">
+    <h1>縣陵百科クイズ</h1>
+    <audio id="bgm" src="https://cdn.pixabay.com/download/audio/2023/03/14/audio_ef16bc184b.mp3?filename=fun-pop-music-14550.mp3" loop></audio>
+    <audio id="correctSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_e4c2590b01.mp3?filename=correct-answer-2-109766.mp3"></audio>
+    <audio id="wrongSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_f1fc1bb3f7.mp3?filename=wrong-answer-3-204254.mp3"></audio>
 
-  <div class="question-box" id="question"></div>
-  <div id="timer">制限時間: <span id="time">15</span>秒</div>
-  <div id="answerBox"></div>
-  <button id="buzzBtn" style="display:none;">早押し！</button>
-  <div class="choices" id="choices"></div>
-  <div id="feedbackBox"></div>
-  <button id="nextBtn" style="display:none;">次の問題</button>
-  <div id="scoreBox"></div>
-  <div id="bestScoreBox"></div>
-  <button id="startBtn">ゲームスタート</button>
+    <div class="question-box" id="question"></div>
+    <div id="timer">制限時間: <span id="time">15</span>秒</div>
+    <div id="answerBox"></div>
+    <button id="buzzBtn" style="display:none;">早押し！</button>
+    <div class="choices" id="choices"></div>
+    <div id="feedbackBox"></div>
+    <button id="nextBtn" style="display:none;">次の問題</button>
+    <div id="scoreBox"></div>
+    <div id="bestScoreBox"></div>
+    <button id="startBtn">ゲームスタート（全画面表示）</button>
+  </div>
 
   <script>
     const fullData = [
@@ -80,13 +209,44 @@
     const buzzBtn = document.getElementById('buzzBtn');
     const nextBtn = document.getElementById('nextBtn');
     const startBtn = document.getElementById('startBtn');
+    
+    const bgm = document.getElementById('bgm');
     const correctSound = document.getElementById('correctSound');
     const wrongSound = document.getElementById('wrongSound');
 
     const QUESTION_REVEAL_INTERVAL = 150;
     const ANSWER_TIME_LIMIT = 15;
 
+    // --- 音声再生関数 ---
+    function playBGM() {
+      if (bgm.paused) {
+        bgm.play().catch(e => console.log("BGM再生失敗:", e));
+      }
+    }
+
+    function playCorrectSound() {
+      correctSound.currentTime = 0; // 再生位置を最初に戻す
+      correctSound.play().catch(e => console.log("正解音再生失敗:", e));
+    }
+
+    function playWrongSound() {
+      wrongSound.currentTime = 0; // 再生位置を最初に戻す
+      wrongSound.play().catch(e => console.log("不正解音再生失敗:", e));
+    }
+
+    // --- ゲーム開始（全画面表示と兼ねる） ---
     startBtn.onclick = () => {
+      // 全画面表示をリクエスト
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen();
+      } else if (document.documentElement.mozRequestFullScreen) { /* Firefox */
+        document.documentElement.mozRequestFullScreen();
+      } else if (document.documentElement.webkitRequestFullscreen) { /* Chrome, Safari & Opera */
+        document.documentElement.webkitRequestFullscreen();
+      } else if (document.documentElement.msRequestFullscreen) { /* IE/Edge */
+        document.documentElement.msRequestFullscreen();
+      }
+
       startBtn.style.display = 'none';
       score = 0;
       current = 0;
@@ -94,6 +254,7 @@
       nextBtn.style.display = 'none';
       nextBtn.innerText = '次の問題'; // ボタンのテキストをリセット
       nextBtn.onclick = handleNextQuestion; // クリックイベントをリセット
+      playBGM(); // ゲーム開始時にBGMを再生
       showQuestion();
     };
 
@@ -111,7 +272,8 @@
 
     function showQuestion() {
       clearTimers();
-
+      qEl.classList.remove('correct-flash', 'wrong-flash'); // アニメーションクラスを削除
+      
       qEl.innerText = '';
       choicesEl.innerHTML = '';
       feedbackBox.innerText = '';
@@ -119,6 +281,12 @@
       answerBox.innerText = '';
       buzzBtn.style.display = 'inline';
       nextBtn.style.display = 'none';
+
+      // 紙吹雪を削除
+      const existingConfetti = document.querySelector('.confetti');
+      if (existingConfetti) {
+        existingConfetti.remove();
+      }
 
       currentAnswer = quizData[current].a;
       answerProgress = '';
@@ -152,14 +320,15 @@
         timerEl.innerText = time;
         if (time <= 0) {
           stopTimer();
-          wrongSound.play();
+          playWrongSound(); // 不正解音再生
+          qEl.classList.add('wrong-flash'); // 不正解アニメーション
           choicesEl.innerHTML = '';
           answerBox.innerText = answerProgress + '...';
           feedbackBox.innerText = `時間切れ…\n【正解】${quizData[current].a}\n${quizData[current].comment || ''}`;
           feedbackBox.style.opacity = 1;
           nextBtn.style.display = 'inline';
           score -= 20;
-          // 最終問題の場合はボタンを「結果を見る」に切り替える
+          
           if (current === quizData.length - 1) {
             nextBtn.innerText = '結果を見る';
             nextBtn.onclick = showScore;
@@ -167,6 +336,24 @@
         }
       }, 1000);
     }
+
+    // --- 紙吹雪生成関数 ---
+    function createConfetti() {
+      const confettiContainer = document.createElement('div');
+      confettiContainer.className = 'confetti';
+      qEl.appendChild(confettiContainer); // 問題ボックス内に生成
+
+      const colors = ['#f00', '#0f0', '#00f', '#ff0', '#0ff', '#f0f']; // 紙吹雪の色
+      for (let i = 0; i < 50; i++) { // 50個の紙吹雪
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.left = Math.random() * 100 + '%'; // ランダムな位置
+        piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.animationDelay = (Math.random() * 2) + 's'; // アニメーション開始をずらす
+        confettiContainer.appendChild(piece);
+      }
+    }
+
 
     function showChoicesForNextChar() {
       let index = answerProgress.length;
@@ -187,14 +374,16 @@
         }
         score += 50 + bonus;
 
-        correctSound.play();
+        playCorrectSound(); // 正解音再生
+        qEl.classList.add('correct-flash'); // 正解アニメーション
+        createConfetti(); // 紙吹雪を生成
+        
         choicesEl.innerHTML = '';
         answerBox.innerText = currentAnswer;
         feedbackBox.innerText = `正解！\n【答え】${quizData[current].a}\n${quizData[current].comment || ''}`;
         feedbackBox.style.opacity = 1;
         nextBtn.style.display = 'inline';
         
-        // 最終問題の場合はボタンを「結果を見る」に切り替える
         if (current === quizData.length - 1) {
           nextBtn.innerText = '結果を見る';
           nextBtn.onclick = showScore;
@@ -233,14 +422,15 @@
             showChoicesForNextChar();
           } else {
             stopTimer();
-            wrongSound.play();
+            playWrongSound(); // 不正解音再生
+            qEl.classList.add('wrong-flash'); // 不正解アニメーション
             choicesEl.innerHTML = '';
             answerBox.innerText = answerProgress + '...';
             feedbackBox.innerText = `不正解…\n【正解】${quizData[current].a}\n${quizData[current].comment || ''}`;
             feedbackBox.style.opacity = 1;
             score -= 20;
             nextBtn.style.display = 'inline';
-            // 最終問題の場合はボタンを「結果を見る」に切り替える
+            
             if (current === quizData.length - 1) {
               nextBtn.innerText = '結果を見る';
               nextBtn.onclick = showScore;
@@ -281,6 +471,12 @@
     function showScore() {
       clearTimers();
 
+      qEl.classList.remove('correct-flash', 'wrong-flash'); // アニメーションクラスを削除
+      const existingConfetti = document.querySelector('.confetti');
+      if (existingConfetti) {
+        existingConfetti.remove();
+      }
+
       qEl.innerText = '';
       choicesEl.innerHTML = '';
       timerEl.innerText = '0';
@@ -291,7 +487,7 @@
       if (score > bestScore) bestScore = score;
       bestBox.innerHTML = `ベストスコア：${bestScore} / ${quizData.length * 100}`;
       startBtn.style.display = 'inline';
-      // 結果表示後、次のゲーム開始に備えてボタンテキストをリセット
+      // 結果表示後、次のゲーム開始に備えてボタンテキストとイベントをリセット
       nextBtn.innerText = '次の問題'; 
       nextBtn.onclick = handleNextQuestion;
     }
