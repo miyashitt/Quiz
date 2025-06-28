@@ -10,18 +10,24 @@
       background: #f8f8f8; 
       text-align: center; 
       padding: 10px; 
-      overflow: hidden; 
+      /* overflow: hidden; */ /* 縦スクロールが必要になるため削除 */
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       min-height: 100vh; 
+      padding-bottom: 80px; /* 固定ボタンの高さ分のパディングを追加 */
     }
     .container {
       max-width: 900px;
       width: 100%;
       padding: 10px; 
       box-sizing: border-box;
+      flex-grow: 1; /* コンテンツが中央に寄るように高さを確保 */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
     }
     h1 {
       font-size: 2.2em; 
@@ -30,6 +36,8 @@
     .question-box { 
       font-size: 1.6em; 
       min-height: 100px; 
+      max-height: 250px; /* 最大高さを設定 */
+      overflow-y: auto; /* 縦スクロールを有効にする */
       margin: 15px auto; 
       width: 95%; 
       background: #fff;
@@ -42,7 +50,7 @@
       word-wrap: break-word; 
       transition: background-color 0.3s ease; 
       position: relative; 
-      overflow: hidden; 
+      overflow-x: hidden; /* 横スクロールは非表示 */
     }
     #timer, #answerBox, #scoreBox, #bestScoreBox, #feedbackBox { 
       margin-top: 15px; 
@@ -64,6 +72,7 @@
       justify-content: center; 
       gap: 8px; 
       margin-top: 20px; 
+      width: 100%; /* 親要素に合わせる */
     }
     .choice { 
       flex-grow: 1; 
@@ -84,11 +93,10 @@
       transform: translateY(-2px);
     }
 
-    /* ボタン全体の調整 */
-    #startBtn, #nextBtn, #buzzBtn { /* #fullscreenBtn を削除 */
+    /* ボタン全体の調整（固定化） */
+    #startBtn, #nextBtn, #buzzBtn { 
       padding: 10px 20px; 
       font-size: 1.2em; 
-      margin-top: 20px; 
       cursor: pointer; 
       background: #4CAF50;
       color: white;
@@ -96,10 +104,19 @@
       border-radius: 8px;
       box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
       transition: background 0.3s ease, transform 0.1s ease;
+
+      /* ボタンを画面下部に固定 */
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: auto; /* 幅を自動調整 */
+      min-width: 180px; /* 最低限の幅を設定 */
+      z-index: 100; /* 他の要素より手前に表示 */
     }
-    #startBtn:hover, #nextBtn:hover, #buzzBtn:hover { /* #fullscreenBtn:hover を削除 */
+    #startBtn:hover, #nextBtn:hover, #buzzBtn:hover { 
       background: #45a049;
-      transform: translateY(-1px);
+      transform: translateX(-50%) translateY(-1px); /* 固定と同時に移動 */
     }
     
     /* 正解時のアニメーション */
@@ -153,11 +170,18 @@
     /* 小さい画面での調整 */
     @media (max-width: 600px) {
       h1 { font-size: 2em; }
-      .question-box { font-size: 1.4em; min-height: 90px; }
+      .question-box { font-size: 1.4em; min-height: 90px; max-height: 200px; } /* 高さ調整 */
       #timer, #answerBox, #scoreBox, #bestScoreBox, #feedbackBox { font-size: 1.1em; }
       .choice {
         font-size: 1.1em; 
         padding: 8px 12px; 
+      }
+      #startBtn, #nextBtn, #buzzBtn {
+        min-width: 150px;
+        bottom: 15px; /* ボタンの位置を少し上げる */
+      }
+      body {
+        padding-bottom: 70px; /* パディング調整 */
       }
     }
   </style>
@@ -169,14 +193,15 @@
     <div class="question-box" id="question"></div>
     <div id="timer">制限時間: <span id="time">15</span>秒</div>
     <div id="answerBox"></div>
-    <button id="buzzBtn" style="display:none;">早押し！</button>
     <div class="choices" id="choices"></div>
     <div id="feedbackBox"></div>
-    <button id="nextBtn" style="display:none;">次の問題</button>
     <div id="scoreBox"></div>
     <div id="bestScoreBox"></div>
-    <button id="startBtn">ゲームスタート</button>
   </div>
+  
+  <button id="buzzBtn" style="display:none;">早押し！</button>
+  <button id="nextBtn" style="display:none;">次の問題</button>
+  <button id="startBtn">ゲームスタート</button>
 
   <script>
     const fullData = [
@@ -227,13 +252,9 @@
     const buzzBtn = document.getElementById('buzzBtn');
     const nextBtn = document.getElementById('nextBtn');
     const startBtn = document.getElementById('startBtn');
-    // const fullscreenBtn = document.getElementById('fullscreenBtn'); // 削除
 
     const QUESTION_REVEAL_INTERVAL = 150;
     const ANSWER_TIME_LIMIT = 15;
-
-    // --- 全画面表示機能は削除しました ---
-    // fullscreenBtn.onclick = () => { ... };
 
     // --- ゲーム開始 ---
     startBtn.onclick = () => {
@@ -422,60 +443,4 @@
             }
           }
         };
-        choicesEl.appendChild(div);
-      });
-    }
-
-    function getCharType(char) {
-      if (/[ぁ-ん]/.test(char)) return 'hiragana';
-      if (/[ァ-ン]/.test(char)) return 'katakana';
-      if (/[a-zA-Z]/.test(char)) return 'alphabet';
-      if (/[0-9]/.test(char)) return 'number';
-      return 'other'; 
-    }
-
-    function getCharPool(type) {
-      switch (type) {
-        case 'hiragana': return HIRAGANA;
-        case 'katakana': return KATAKANA;
-        case 'alphabet': return ALPHABET;
-        case 'number': return NUMBERS;
-        default: return [];
-      }
-    }
-
-    function clearTimers() {
-      clearInterval(revealTimer);
-      clearInterval(answerTimer);
-    }
-
-    function stopTimer() {
-      clearInterval(answerTimer);
-    }
-
-    function showScore() {
-      clearTimers();
-
-      qEl.classList.remove('correct-flash', 'wrong-flash'); 
-      const existingConfetti = document.querySelector('.confetti');
-      if (existingConfetti) {
-        existingConfetti.remove();
-      }
-
-      qEl.innerText = '';
-      choicesEl.innerHTML = '';
-      timerEl.innerText = '0';
-      answerBox.innerText = '';
-      feedbackBox.innerText = '';
-      nextBtn.style.display = 'none';
-      scoreBox.innerHTML = `今回のスコア：${score} / ${quizData.length * 100}`;
-      if (score > bestScore) bestScore = score;
-      bestBox.innerHTML = `ベストスコア：${bestScore} / ${quizData.length * 100}`;
-      startBtn.style.display = 'inline';
-      startBtn.innerText = 'もう一度プレイ'; 
-      nextBtn.innerText = '次の問題'; 
-      nextBtn.onclick = handleNextQuestion;
-    }
-  </script>
-</body>
-</html>
+        choicesEl.appendChild
