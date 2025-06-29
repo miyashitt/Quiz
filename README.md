@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: sans-serif;
-            background: #f8f8f8;
+            background: #9cdeef; /* 背景色を変更 */
             text-align: center;
             padding: 20px;
             margin: 0;
@@ -51,12 +51,12 @@
             cursor: pointer;
             border: none;
             border-radius: 8px;
-            background-color: #007bff;
+            background-color: #ce91ea; /* ボタンの色を変更 */
             color: white;
             transition: background-color 0.3s ease;
         }
         #startBtn:hover, #nextBtn:hover, #buzzBtn:hover {
-            background-color: #0056b3;
+            background-color: #b373d1; /* ホバー時の色を調整 */
         }
         #timer, #answerBox, #scoreBox, #bestScoreBox, #feedbackBox {
             margin-top: 20px;
